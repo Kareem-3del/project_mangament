@@ -41,6 +41,8 @@ export default function DashboardPage() {
   }, [profile])
 
   async function fetchDashboardStats() {
+    if (!profile?.id) return
+
     try {
       const { count: projectsCount } = await supabase
         .from('projects')
@@ -50,13 +52,13 @@ export default function DashboardPage() {
       const { count: ticketsCount } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
-        .eq('assigned_to', profile?.id)
+        .eq('assigned_to', profile.id)
         .in('status', ['todo', 'in_progress', 'in_review'])
 
       const { count: completedCount } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
-        .eq('assigned_to', profile?.id)
+        .eq('assigned_to', profile.id)
         .eq('status', 'done')
 
       const startOfWeek = new Date()
@@ -66,7 +68,7 @@ export default function DashboardPage() {
       const { data: timeEntries } = await supabase
         .from('time_entries')
         .select('duration_minutes')
-        .eq('user_id', profile?.id)
+        .eq('user_id', profile.id)
         .gte('check_in', startOfWeek.toISOString())
         .not('check_out', 'is', null)
 
