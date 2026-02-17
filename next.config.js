@@ -8,11 +8,7 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
-  },
+  transpilePackages: ['@supabase/auth-helpers-nextjs'],
 }
 
 module.exports = nextConfig
