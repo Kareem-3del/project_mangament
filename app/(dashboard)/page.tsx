@@ -23,6 +23,10 @@ interface DashboardStats {
   completedTickets: number
 }
 
+interface TimeEntryDuration {
+  duration_minutes: number | null
+}
+
 export default function DashboardPage() {
   const { profile } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
@@ -73,7 +77,10 @@ export default function DashboardPage() {
         .not('check_out', 'is', null)
 
       const totalMinutes =
-        timeEntries?.reduce((sum, entry) => sum + (entry.duration_minutes || 0), 0) || 0
+        (timeEntries as TimeEntryDuration[] | null)?.reduce(
+          (sum, entry) => sum + (entry.duration_minutes || 0),
+          0
+        ) || 0
       const hours = Math.round((totalMinutes / 60) * 10) / 10
 
       setStats({

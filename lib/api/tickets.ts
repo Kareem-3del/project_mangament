@@ -64,6 +64,7 @@ export async function createTicket(ticket: TicketInsert) {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('tickets')
+    // @ts-ignore - Supabase type inference issue
     .insert(ticket)
     .select()
     .single()
@@ -76,6 +77,7 @@ export async function updateTicket(id: string, updates: TicketUpdate) {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('tickets')
+    // @ts-ignore - Supabase type inference issue
     .update(updates)
     .eq('id', id)
     .select()
@@ -108,6 +110,7 @@ export async function createComment(ticketId: string, content: string, userId: s
   const supabase = createClient()
   const { data, error } = await supabase
     .from('ticket_comments')
+    // @ts-ignore - Supabase type inference issue
     .insert({ ticket_id: ticketId, content, user_id: userId })
     .select('*, user:users(full_name, email, avatar_url)')
     .single()

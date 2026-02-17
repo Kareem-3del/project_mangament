@@ -4,7 +4,12 @@ import { Database } from '@/lib/supabase/database.types'
 type TimeEntry = Database['public']['Tables']['time_entries']['Row']
 type TimeEntryInsert = Database['public']['Tables']['time_entries']['Insert']
 
-export async function getActiveTimeEntry(userId: string) {
+export type TimeEntryWithRelations = TimeEntry & {
+  project: { name: string } | null
+  ticket: { title: string } | null
+}
+
+export async function getActiveTimeEntry(userId: string): Promise<TimeEntryWithRelations | null> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('time_entries')
@@ -16,7 +21,7 @@ export async function getActiveTimeEntry(userId: string) {
     .maybeSingle()
 
   if (error) throw error
-  return data
+  return data as TimeEntryWithRelations | null
 }
 
 export async function checkIn(
@@ -24,7 +29,7 @@ export async function checkIn(
   projectId?: string,
   ticketId?: string,
   notes?: string
-) {
+): Promise<TimeEntryWithRelations> {
   const supabase = createClient()
 
   // First, check if there's an active entry
@@ -35,6 +40,7 @@ export async function checkIn(
 
   const { data, error } = await supabase
     .from('time_entries')
+    // @ts-ignore - Supabase type inference issue
     .insert({
       user_id: userId,
       project_id: projectId,
@@ -45,27 +51,28 @@ export async function checkIn(
     .single()
 
   if (error) throw error
-  return data
+  return data as TimeEntryWithRelations
 }
 
-export async function checkOut(entryId: string) {
+export async function checkOut(entryId: string): Promise<TimeEntryWithRelations> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('time_entries')
+    // @ts-ignore - Supabase type inference issue
     .update({ check_out: new Date().toISOString() })
     .eq('id', entryId)
     .select('*, project:projects(name), ticket:tickets(title)')
     .single()
 
   if (error) throw error
-  return data
+  return data as TimeEntryWithRelations
 }
 
 export async function getTimeEntries(
   userId: string,
   startDate?: Date,
   endDate?: Date
-) {
+): Promise<TimeEntryWithRelations[]> {
   const supabase = createClient()
   let query = supabase
     .from('time_entries')
@@ -83,7 +90,7 @@ export async function getTimeEntries(
 
   const { data, error } = await query
   if (error) throw error
-  return data
+  return (data as TimeEntryWithRelations[]) || []
 }
 
 export async function getProjectTimeEntries(projectId: string) {

@@ -7,6 +7,7 @@ import {
   checkIn,
   checkOut,
   getTimeEntries,
+  TimeEntryWithRelations,
 } from '@/lib/api/time-entries'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import {
@@ -20,8 +21,8 @@ import { formatDuration, formatDateTime } from '@/lib/utils'
 
 export default function TimeTrackingPage() {
   const { profile } = useAuth()
-  const [activeEntry, setActiveEntry] = useState<any>(null)
-  const [timeEntries, setTimeEntries] = useState<any[]>([])
+  const [activeEntry, setActiveEntry] = useState<TimeEntryWithRelations | null>(null)
+  const [timeEntries, setTimeEntries] = useState<TimeEntryWithRelations[]>([])
   const [loading, setLoading] = useState(true)
   const [elapsedTime, setElapsedTime] = useState(0)
 
@@ -245,7 +246,7 @@ export default function TimeTrackingPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-gray-900">
-                    {formatDuration(entry.duration_minutes)}
+                    {formatDuration(entry.duration_minutes || 0)}
                   </p>
                   {entry.is_billable && (
                     <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">

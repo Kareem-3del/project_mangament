@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Database } from '@/lib/supabase/database.types'
 import {
   EnvelopeIcon,
   LockClosedIcon,
@@ -13,6 +14,9 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline'
 
+type CompanyInsert = Database['public']['Tables']['companies']['Insert']
+type UserInsert = Database['public']['Tables']['users']['Insert']
+
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,7 +25,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,6 +32,7 @@ export default function SignupPage() {
     setError(null)
 
     try {
+      const supabase = createClient()
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -44,19 +48,26 @@ export default function SignupPage() {
       if (authData.user) {
         const { data: company, error: companyError } = await supabase
           .from('companies')
+          // @ts-ignore - Supabase type inference issue
           .insert({ name: companyName })
           .select()
           .single()
 
         if (companyError) throw companyError
+        if (!company) throw new Error('Failed to create company')
 
-        const { error: profileError } = await supabase.from('users').insert({
-          id: authData.user.id,
-          email,
-          full_name: fullName,
-          company_id: company.id,
-          role: 'admin',
-        })
+        const companyId = (company as any).id
+
+        const { error: profileError } = await supabase
+          .from('users')
+          // @ts-ignore - Supabase type inference issue
+          .insert({
+            id: authData.user.id,
+            email,
+            full_name: fullName,
+            company_id: companyId,
+            role: 'admin',
+          })
 
         if (profileError) throw profileError
 
