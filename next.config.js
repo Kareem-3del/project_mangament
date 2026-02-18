@@ -8,7 +8,6 @@ const nextConfig = {
       },
     ],
   },
-  transpilePackages: ['@supabase/auth-helpers-nextjs'],
 }
 
 module.exports = nextConfig
